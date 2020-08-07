@@ -13,7 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.vishesh.gallery.databinding.ActivityMainBinding
+import com.vishesh.gallery.databinding.ActivityGalleryBinding
 import com.vishesh.gallery.domain.entities.Photo
 import com.vishesh.gallery.presentation.detail.DetailActivity
 import com.vishesh.gallery.utils.EndlessRecyclerViewScrollListener
@@ -35,7 +35,7 @@ class GalleryActivity : DaggerAppCompatActivity() {
 
     @Inject
     internal lateinit var viewModelFactory: ViewModelProvider.Factory
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityGalleryBinding
     private val viewModel: GalleryViewModel by lazy {
         ViewModelProvider(this, viewModelFactory).get(GalleryViewModel::class.java)
     }
@@ -47,7 +47,7 @@ class GalleryActivity : DaggerAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityGalleryBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupViews()
         observeLiveData()
