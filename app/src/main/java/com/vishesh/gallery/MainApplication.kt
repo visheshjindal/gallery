@@ -10,7 +10,6 @@ import kotlin.properties.Delegates
 
 class MainApplication : Application(), HasAndroidInjector {
 
-    private val TAG = "MainApplication"
     @Inject
     lateinit var androidInjector: DispatchingAndroidInjector<Any>
 

@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.vishesh.gallery.domain.entities.Comment;
 import com.vishesh.gallery.domain.entities.Photo;
-import com.vishesh.gallery.domain.repository.CommentRepository;
+import com.vishesh.gallery.domain.usecases.GetCommentUseCase;
 
 import java.util.List;
 
@@ -14,12 +14,12 @@ import javax.inject.Inject;
 
 public class DetailViewModel extends ViewModel {
 
-    private CommentRepository commentRepository;
+    private GetCommentUseCase getCommentUseCase;
     private MutableLiveData<Photo> _photoData = new MutableLiveData<>();
 
     @Inject
-    public DetailViewModel(CommentRepository commentRepository) {
-        this.commentRepository = commentRepository;
+    public DetailViewModel(GetCommentUseCase commentUseCase) {
+        this.getCommentUseCase = commentUseCase;
     }
 
     public void setPhotoData(Photo selectedPhoto) {
@@ -33,7 +33,7 @@ public class DetailViewModel extends ViewModel {
     public LiveData<List<Comment>> getComments() {
         Photo photo = _photoData.getValue();
         String photoID = photo == null ? "" : photo.getId();
-        return commentRepository.getComments(photoID);
+        return getCommentUseCase.getComments(photoID);
     }
 
     public void postComment(String comment) {
@@ -44,6 +44,6 @@ public class DetailViewModel extends ViewModel {
                 photo.getId(),
                 comment
         );
-        commentRepository.postComment(newComment);
+        getCommentUseCase.postComment(newComment);
     }
 }

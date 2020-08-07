@@ -1,9 +1,6 @@
 package com.vishesh.gallery.data.local;
 
-import android.content.Context;
-
 import androidx.room.Database;
-import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.vishesh.gallery.data.local.dao.CommentDao;
@@ -19,5 +16,6 @@ public abstract class CommentDatabase extends RoomDatabase {
     private static final int NUMBER_OF_THREADS = 4;
     public static final ExecutorService databaseWriteExecutor =
             Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+
     public static final String DB_NAME = "comment_database";
 }
