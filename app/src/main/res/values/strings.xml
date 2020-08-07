@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Gallery</string>
+    <string name="search_quot_circle_quot">Search \"Circle\"</string>
+    <string name="simple_transition_name">simple_fragment_transition</string>
+    <string name="submit">Submit</string>
+    <string name="say_something">Say Something</string>
+</resources>
