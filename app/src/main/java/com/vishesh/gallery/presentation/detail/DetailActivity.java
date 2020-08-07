@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
@@ -44,14 +43,27 @@ public class DetailActivity extends DaggerAppCompatActivity {
         viewModel = new ViewModelProvider(this, viewModelFactory).get(DetailViewModel.class);
         setContentView(binding.getRoot());
         supportPostponeEnterTransition();
+        setupViews();
+        getParameters();
+        bindViews();
+    }
+
+    private void setupViews() {
         setupToolbar();
         setupCommentList();
-        getParameters();
+    }
+
+    private void bindViews() {
         bindImageView();
         bindCommentsList();
         bindSubmitButton();
     }
 
+    /**
+     * Bind the submit button with the view model
+     * In case of the submit button tap pass the data to view model for comment post if
+     * text is not empty or null
+     */
     private void bindSubmitButton() {
         binding.btnSubmit.setOnClickListener(v -> {
             Editable text = binding.etComment.getText();
@@ -62,23 +74,62 @@ public class DetailActivity extends DaggerAppCompatActivity {
         });
     }
 
+    /**
+     * Reset comment text field with empty text
+     */
     private void resetCommentField() {
         binding.etComment.clearFocus();
         binding.etComment.setText("");
     }
 
+    /**
+     * Observe the comment list LiveData from the View model and submit the updated comment list
+     * to the list adapter
+     */
     private void bindCommentsList() {
         viewModel.getComments().observe(this,
                 comments -> commentsAdapter.submitList(new ArrayList<>(comments)));
     }
 
+    /**
+     * Listen to the LiveData of selected photo provided by the view model
+     */
     private void bindImageView() {
-        viewModel.getSelectedPhoto().observe(this, photo -> Glide.with(this)
-                .load(photo.getLink())
-                .dontAnimate()
-                .listener(getRequestListener()).into(binding.imageView));
+        viewModel.getSelectedPhoto().observe(this, photo -> {
+            setToolbarTitle(photo);
+            loadImage(photo);
+        });
     }
 
+    /**
+     * Load image to the image view with transition animation
+     *
+     * @param photo: [Photo]
+     */
+    private void loadImage(@NotNull Photo photo) {
+        Glide.with(this)
+                .load(photo.getLink())
+                .dontAnimate()
+                .listener(getRequestListener()).into(binding.imageView);
+    }
+
+    /**
+     * Update the toolbar title with the Selected Photo title
+     *
+     * @param photo: [Photo]
+     */
+    private void setToolbarTitle(Photo photo) {
+        if (getSupportActionBar() != null && photo.getTitle() != null) {
+            getSupportActionBar().setTitle(photo.getTitle());
+        }
+    }
+
+    /**
+     * Request listener to listen to the Glide request
+     * in case of the Error or success resume the paused transition animation
+     *
+     * @return <>RequestListener<Drawable></>
+     */
     @NotNull
     private RequestListener<Drawable> getRequestListener() {
         return new RequestListener<Drawable>() {
@@ -107,6 +158,9 @@ public class DetailActivity extends DaggerAppCompatActivity {
         };
     }
 
+    /**
+     * Setup Toolbar with the Back button enabled
+     */
     private void setupToolbar() {
         setSupportActionBar(binding.toolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -117,6 +171,9 @@ public class DetailActivity extends DaggerAppCompatActivity {
         }
     }
 
+    /**
+     * Setup Comment Recyclerview with adapter
+     */
     private void setupCommentList() {
         binding.rvComment.setAdapter(commentsAdapter);
     }
@@ -131,6 +188,7 @@ public class DetailActivity extends DaggerAppCompatActivity {
 
     /**
      * Get the intent extra bundle and set view model in case if bundle is null finish the activity
+     * pass the Photo item to the view model and set the transition name for the shared view animation
      */
     private void getParameters() {
         Bundle bundle = getIntent().getExtras();
@@ -140,9 +198,6 @@ public class DetailActivity extends DaggerAppCompatActivity {
                 finish();
             }
             viewModel.setPhotoData(photo);
-            if (getSupportActionBar() != null && photo.getTitle() != null) {
-                getSupportActionBar().setTitle(photo.getTitle());
-            }
             String transitionName = bundle.getString(GalleryActivity.EXTRA_IMAGE_TRANSITION_NAME, "");
             binding.imageView.setTransitionName(transitionName);
         } else {

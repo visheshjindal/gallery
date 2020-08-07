@@ -3,6 +3,9 @@ package com.vishesh.gallery.presentation.gallery
 import androidx.recyclerview.widget.DiffUtil
 import com.vishesh.gallery.domain.entities.Photo
 
+/**
+ * DiffItemCallback for the [Photo] data class which provides diff for the adapter
+ */
 class PhotoDiffItemCallback: DiffUtil.ItemCallback<Photo?>() {
 
     override fun areItemsTheSame(oldItem: Photo, newItem: Photo): Boolean {

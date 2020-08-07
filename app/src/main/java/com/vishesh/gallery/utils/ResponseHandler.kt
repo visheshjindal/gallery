@@ -6,6 +6,9 @@ import retrofit2.HttpException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
+/**
+ * Class to handle the Retrofit response and provide the appropriate Error Messages and for the exceptions
+ */
 open class ResponseHandler {
     fun handleSuccess(data: List<Photo>): Resource.Success {
         return Resource.Success(data)

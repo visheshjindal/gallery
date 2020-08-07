@@ -3,6 +3,7 @@ package com.vishesh.gallery.presentation.gallery
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.app.ActivityOptionsCompat
@@ -12,7 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.vishesh.gallery.databinding.ActivityMainBinding
+import com.vishesh.gallery.databinding.ActivityGalleryBinding
 import com.vishesh.gallery.domain.entities.Photo
 import com.vishesh.gallery.presentation.detail.DetailActivity
 import com.vishesh.gallery.utils.EndlessRecyclerViewScrollListener
@@ -25,6 +26,8 @@ import kotlin.math.roundToInt
 
 class GalleryActivity : DaggerAppCompatActivity() {
 
+    private val tag = "GalleryActivity"
+
     companion object {
         const val EXTRA_PHOTO_ITEM = "extra_photo_item"
         const val EXTRA_IMAGE_TRANSITION_NAME = "image_transition_name"
@@ -32,7 +35,7 @@ class GalleryActivity : DaggerAppCompatActivity() {
 
     @Inject
     internal lateinit var viewModelFactory: ViewModelProvider.Factory
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityGalleryBinding
     private val viewModel: GalleryViewModel by lazy {
         ViewModelProvider(this, viewModelFactory).get(GalleryViewModel::class.java)
     }
@@ -44,13 +47,16 @@ class GalleryActivity : DaggerAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityGalleryBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        bindViews()
+        setupViews()
         observeLiveData()
     }
 
-    private fun bindViews() {
+    /**
+     * Setup views
+     */
+    private fun setupViews() {
         setupRecyclerView()
         binding.etSearch.doAfterTextChanged {
             endlessRecyclerViewScrollListener.resetState() //need to reset page in case of new query
@@ -63,6 +69,9 @@ class GalleryActivity : DaggerAppCompatActivity() {
         bindError()
     }
 
+    /**
+     * Listen the LiveData of Photos list provided by the view model
+     */
     private fun bindRecyclerView() {
         val photoListObserver = Observer<List<Photo?>> {
             adapter.submitList(it.toMutableList())
@@ -76,28 +85,35 @@ class GalleryActivity : DaggerAppCompatActivity() {
         viewModel.photoList.observe(this, photoListObserver)
     }
 
+    /**
+     * Listen to the API error provided by view model through LiveData<String>
+     */
     private fun bindError() {
         val errorObserver = Observer<String> {
-
+            Log.d(tag, it)
         }
-
         viewModel.error.observe(this, errorObserver)
     }
 
+    /**
+     * Setup the image recycler view with the Layout manager, Span lookup, Scroll listener and adapter
+     */
     private fun setupRecyclerView() {
         val layoutManager = GridLayoutManager(
             this,
             getCalculatedNumberOfColumns(numberBaseItems)
         )
 
-        // Added
-        endlessRecyclerViewScrollListener = object: EndlessRecyclerViewScrollListener(layoutManager) {
-            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-                viewModel.onLoadMore(page)
+        /// Add endless scroll listener to listen to when to load more data
+        endlessRecyclerViewScrollListener =
+            object : EndlessRecyclerViewScrollListener(layoutManager) {
+                override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                    viewModel.onLoadMore(page)
+                }
             }
-        }
 
-        val spanSizeLookup = object: GridLayoutManager.SpanSizeLookup() {
+        /// Span size lookup to set the progress item as full width of the recyclerview
+        val spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return if (adapter.getItemViewType(position) == GalleryAdapter.loadingItem) {
                     layoutManager.spanCount
@@ -111,12 +127,19 @@ class GalleryActivity : DaggerAppCompatActivity() {
 
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.addOnScrollListener(endlessRecyclerViewScrollListener)
+
+        ///On item click closure for listing to the recyclerview item clicks
         adapter.onItemClick = { imageView, item ->
             startDetailActivity(imageView, item)
         }
         binding.recyclerView.adapter = adapter
     }
 
+    /**
+     * Start the detail activity
+     * @param sharedImageView: ImageView reference of the selected cell
+     * @param item: [Photo] data class to be passed to the activity
+     */
     private fun startDetailActivity(
         sharedImageView: AppCompatImageView,
         item: Photo
@@ -125,7 +148,7 @@ class GalleryActivity : DaggerAppCompatActivity() {
         intent.putExtra(EXTRA_PHOTO_ITEM, item)
         intent.putExtra(
             EXTRA_IMAGE_TRANSITION_NAME,
-            ViewCompat.getTransitionName(sharedImageView)
+            ViewCompat.getTransitionName(sharedImageView) //transition name of the selected Image view
         )
 
         /// To create shared element animation

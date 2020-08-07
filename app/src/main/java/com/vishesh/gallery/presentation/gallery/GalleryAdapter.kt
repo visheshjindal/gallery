@@ -15,7 +15,7 @@ import com.vishesh.gallery.domain.entities.Photo
 class GalleryAdapter : ListAdapter<Photo?, RecyclerView.ViewHolder>(PhotoDiffItemCallback()) {
 
     companion object {
-         const val imageItem = 0
+        const val imageItem = 0
         const val loadingItem = 1
     }
 
@@ -36,20 +36,28 @@ class GalleryAdapter : ListAdapter<Photo?, RecyclerView.ViewHolder>(PhotoDiffIte
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is ViewHolder) {
             val item = getItem(position)
-            holder.binding.root.setOnClickListener {
-                item?.let { onItemClick?.invoke(holder.binding.imageView, it) }
-            }
-            ViewCompat.setTransitionName(holder.binding.imageView, item?.id)
-            Glide.with(holder.binding.root)
-                .load(item?.link)
-                .placeholder(R.drawable.placeholder)
-                .error(R.drawable.placeholder)
-                .optionalCenterCrop()
-                .into(holder.binding.imageView)
+            item?.let { holder.bind(it) }
         }
+
     }
 
-    class ViewHolder(val binding: ItemImageViewBinding): RecyclerView.ViewHolder(binding.root) {
+    private fun ViewHolder.bind(photo: Photo) {
+        binding.root.setOnClickListener {
+            photo.let { onItemClick?.invoke(binding.imageView, it) }
+        }
+        ViewCompat.setTransitionName(binding.imageView, photo.id)
+
+        /// Load image from the link
+        Glide.with(binding.root)
+            .load(photo.link)
+            .placeholder(R.drawable.placeholder)
+            .error(R.drawable.placeholder)
+            .optionalCenterCrop()
+            .into(binding.imageView)
+    }
+
+
+    class ViewHolder(val binding: ItemImageViewBinding) : RecyclerView.ViewHolder(binding.root) {
         companion object {
             fun create(parent: ViewGroup): ViewHolder {
                 val binding = ItemImageViewBinding.inflate(
@@ -64,7 +72,7 @@ class GalleryAdapter : ListAdapter<Photo?, RecyclerView.ViewHolder>(PhotoDiffIte
         }
     }
 
-    class LoadingViewHolder(binding: ItemLoadingBinding): RecyclerView.ViewHolder(binding.root) {
+    class LoadingViewHolder(binding: ItemLoadingBinding) : RecyclerView.ViewHolder(binding.root) {
         companion object {
             fun create(parent: ViewGroup): LoadingViewHolder {
                 val binding = ItemLoadingBinding.inflate(

@@ -8,6 +8,10 @@ import okhttp3.Response
 import java.io.IOException
 
 
+/**
+ * Custom interceptor for checking network state for Retrofit
+ * It will throw a [NoConnectivityException] in case of no internet availability
+ */
 class NetworkConnectionInterceptor(private val context: Context) : Interceptor {
 
     @Throws(IOException::class)
@@ -30,6 +34,9 @@ class NetworkConnectionInterceptor(private val context: Context) : Interceptor {
 
 }
 
+/**
+ * IOException class for the 'No Internet Connection'
+ */
 class NoConnectivityException : IOException() {
     // You can send any message whatever you want from here.
     override val message: String
